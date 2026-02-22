@@ -13,16 +13,25 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponseDTO> handleException(Exception ex) {
+    public ResponseEntity<ApiResponseDTO<String>> handleException(Exception ex) {
         return ResponseEntity.status(500).body(ApiResponseDTO.error("Erro interno no servidor", null));
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponseDTO> handleResourceNotFoundException(ResourceNotFoundException ex) {
+    public ResponseEntity<ApiResponseDTO<String>> handleResourceNotFoundException(ResourceNotFoundException ex) {
         return ResponseEntity.status(404).body(ApiResponseDTO.error(ex.getMessage(), null));
         // return
         // ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponseDTO.error(ex.getMessage(),
         // null));
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiResponseDTO<Map<String, String>>> handleBadRequestException(
+            BadRequestException ex) {
+
+        ApiResponseDTO<Map<String, String>> response = ApiResponseDTO.error(ex.getMessage(), null);
+
+        return ResponseEntity.badRequest().body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class) // Define que esse método é chamado nessa exceção

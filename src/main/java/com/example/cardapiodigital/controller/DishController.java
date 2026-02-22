@@ -32,104 +32,104 @@ import org.springframework.web.bind.annotation.PathVariable;
 // Swagger accordion
 @Tag(name = "Pratos", description = "Gerenciamento de pratos do sistema")
 public class DishController {
-    private DishService dishService;
+        private DishService dishService;
 
-    public DishController(DishService dishService) {
-        this.dishService = dishService;
-    }
-
-    // @valid valida annotation do dto
-    @PostMapping
-    // @Operation define o resumo e a descrição detalhada do endpoint
-    @Operation(summary = "Cadastra um novo prato", description = "Requisição de cadastro de prato")
-
-    // @ApiResponse define o que esperar em cada cenário (sucesso ou erro)
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Produto criado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos"),
-            @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    })
-
-    public ResponseEntity<ApiResponseDTO> createDish(@RequestBody @Valid DishRequestDTO dish) {
-        Dish newDish = dishService.salvarPrato(dish);
-        // return ResponseEntity.ok().build(); .ok -> status e .build() -> resposta sem
-        // corpo
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                ApiResponseDTO.success("Prato criado com sucesso!", newDish));
-    }
-
-    @GetMapping
-    @Operation(summary = "Listagem de pratos", description = "Requisição de listagem de pratos")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Pratos listados com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos"),
-            @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    })
-    public ResponseEntity<ApiResponseDTO> listDishes(
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) @Positive Double price) {
-        List<Dish> dishes = dishService.listarPratos(status, price);
-
-        if (dishes.isEmpty()) {
-            return ResponseEntity.ok(
-                    ApiResponseDTO.error("Nenhum prato cadastrado!", null));
+        public DishController(DishService dishService) {
+                this.dishService = dishService;
         }
 
-        return ResponseEntity.ok(
-                ApiResponseDTO.success("Pratos listados com sucesso!", dishes));
-    }
+        // @valid valida annotation do dto
+        @PostMapping
+        // @Operation define o resumo e a descrição detalhada do endpoint
+        @Operation(summary = "Cadastra um novo prato", description = "Requisição de cadastro de prato")
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Listagem de prato", description = "Requisição de listagem de prato")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Prato listado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos"),
-            @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    })
-    public ResponseEntity<ApiResponseDTO> getDishById(@PathVariable Long id) {
-        Dish dish = dishService.listarPrato(id);
+        // @ApiResponse define o que esperar em cada cenário (sucesso ou erro)
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "201", description = "Produto criado com sucesso"),
+                        @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos"),
+                        @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
+        })
 
-        return ResponseEntity.ok(
-                ApiResponseDTO.success("Prato listado com sucesso!", dish));
+        public ResponseEntity<ApiResponseDTO<Dish>> createDish(@RequestBody @Valid DishRequestDTO dish) {
+                Dish newDish = dishService.salvarPrato(dish);
+                // return ResponseEntity.ok().build(); .ok -> status e .build() -> resposta sem
+                // corpo
 
-        /*
-         * Tem essa forma que pega como uma array
-         * return dishService.listarPrato(id)
-         * .map(dish -> ResponseEntity.ok(
-         * ApiResponseDTO.success(dish, "Prato listado com sucesso!")
-         * ))
-         * .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-         * ApiResponseDTO.error("Prato não encontrado!", null)
-         * ));
-         */
-    }
+                return ResponseEntity.status(HttpStatus.CREATED).body(
+                                ApiResponseDTO.success("Prato criado com sucesso!", newDish));
+        }
 
-    @PatchMapping("/{id}")
-    @Operation(summary = "Atualizar um prato", description = "Requisição de atualização de prato")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Prato atualizado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos"),
-            @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    })
-    public ResponseEntity<ApiResponseDTO> patchDish(@PathVariable Long id,
-            @RequestBody @Valid DishUpdateDTO dish) {
+        @GetMapping
+        @Operation(summary = "Listagem de pratos", description = "Requisição de listagem de pratos")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Pratos listados com sucesso"),
+                        @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos"),
+                        @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
+        })
+        public ResponseEntity<ApiResponseDTO<List<Dish>>> listDishes(
+                        @RequestParam(required = false) String status,
+                        @RequestParam(required = false) @Positive Double price) {
+                List<Dish> dishes = dishService.listarPratos(status, price);
 
-        Dish updatedDish = dishService.atualizarPrato(id, dish);
+                if (dishes.isEmpty()) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                        .body(ApiResponseDTO.error("Nenhum prato cadastrado!", null));
+                }
 
-        return ResponseEntity.ok(
-                ApiResponseDTO.success("Prato atualizado com sucesso!", updatedDish));
-    }
+                return ResponseEntity.ok(
+                                ApiResponseDTO.success("Pratos listados com sucesso!", dishes));
+        }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Deletar um prato", description = "Requisição de exclusão de prato")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Prato deletado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos"),
-            @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    })
-    public ResponseEntity<ApiResponseDTO> deleteDish(@PathVariable Long id) {
-        dishService.deletarPrato(id);
-        return ResponseEntity.noContent().build();
-    }
+        @GetMapping("/{id}")
+        @Operation(summary = "Listagem de prato", description = "Requisição de listagem de prato")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Prato listado com sucesso"),
+                        @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos"),
+                        @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
+        })
+        public ResponseEntity<ApiResponseDTO<Dish>> getDishById(@PathVariable Long id) {
+                Dish dish = dishService.listarPrato(id);
+
+                return ResponseEntity.ok(
+                                ApiResponseDTO.success("Prato listado com sucesso!", dish));
+
+                /*
+                 * Tem essa forma que pega como uma array
+                 * return dishService.listarPrato(id)
+                 * .map(dish -> ResponseEntity.ok(
+                 * ApiResponseDTO.success(dish, "Prato listado com sucesso!")
+                 * ))
+                 * .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                 * ApiResponseDTO.error("Prato não encontrado!", null)
+                 * ));
+                 */
+        }
+
+        @PatchMapping("/{id}")
+        @Operation(summary = "Atualizar um prato", description = "Requisição de atualização de prato")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Prato atualizado com sucesso"),
+                        @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos"),
+                        @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
+        })
+        public ResponseEntity<ApiResponseDTO<Dish>> patchDish(@PathVariable Long id,
+                        @RequestBody @Valid DishUpdateDTO dish) throws Exception {
+
+                Dish updatedDish = dishService.atualizarPrato(id, dish);
+
+                return ResponseEntity.ok(
+                                ApiResponseDTO.success("Prato atualizado com sucesso!", updatedDish));
+        }
+
+        @DeleteMapping("/{id}")
+        @Operation(summary = "Deletar um prato", description = "Requisição de exclusão de prato")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "204", description = "Prato deletado com sucesso"),
+                        @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos"),
+                        @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
+        })
+        public ResponseEntity<Void> deleteDish(@PathVariable Long id) {
+                dishService.deletarPrato(id);
+                return ResponseEntity.noContent().build();
+        }
 }
