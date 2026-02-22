@@ -13,7 +13,6 @@ public interface DishRepository extends JpaRepository<Dish, Long> {
     @Query("SELECT d FROM Dish d WHERE d.preco >= :preco")
     List<Dish> findByPrecoGreaterOrEqual(BigDecimal preco);
 
-    @Query("SELECT d FROM Dish d WHERE d.status = :status AND d.preco = :preco")
+    @Query("SELECT d FROM Dish d WHERE d.status = :status AND d.preco >= :preco")
     List<Dish> findByStatusAndPrecoGreaterOrEqual(String status, BigDecimal preco);
-
 }
